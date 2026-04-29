@@ -40,7 +40,3 @@ If you want to run or modify this project on your local machine:
 
 4. **Open in browser**:
    Navigate to `http://localhost:5173/` to interact with the simulation.
-
-## About the Thor Robot
-
-This software simulation is inspired by the **Thor Robot**, an open-source, 3D printable, 6-DOF robotic arm originally designed for educational purposes and makers.
