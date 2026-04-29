@@ -166,6 +166,25 @@ finger2.position.set(0.5, 0.2, 0);
 joint6.add(finger1);
 joint6.add(finger2);
 
+// Add a grasp point at the center of the gripper
+const graspPoint = new THREE.Object3D();
+graspPoint.position.set(0, 0.8, 0); // between fingers
+joint6.add(graspPoint);
+
+// --- Pickable Objects ---
+const pickables = [];
+const boxGeo = new THREE.BoxGeometry(0.8, 0.8, 0.8);
+const colors = [0xff0055, 0x00ff55, 0x5500ff];
+colors.forEach((color, i) => {
+    const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.3 });
+    const box = new THREE.Mesh(boxGeo, mat);
+    box.position.set(5 * Math.cos(i * Math.PI / 1.5), 0.4, 5 * Math.sin(i * Math.PI / 1.5));
+    box.castShadow = true;
+    box.receiveShadow = true;
+    scene.add(box);
+    pickables.push(box);
+});
+
 // Keep references to joints for UI control
 const joints = [joint1, joint2, joint3, joint4, joint5, joint6];
 const axes = ['y', 'x', 'x', 'y', 'x', 'y']; // The axis of rotation for each joint
@@ -195,6 +214,62 @@ document.getElementById('reset-btn').addEventListener('click', () => {
         valDisplays[index].innerText = `0°`;
         joints[index].rotation[axes[index]] = 0;
     });
+});
+
+// --- Grip Logic ---
+let isGripping = false;
+let heldObject = null;
+const gripBtn = document.getElementById('grip-btn');
+const worldPosTarget = new THREE.Vector3();
+const objWorldPos = new THREE.Vector3();
+
+gripBtn.addEventListener('click', () => {
+    isGripping = !isGripping;
+    if (isGripping) {
+        gripBtn.innerText = 'Release Gripper';
+        gripBtn.style.background = 'rgba(255, 0, 85, 0.2)';
+        gripBtn.style.borderColor = '#ff0055';
+        gripBtn.style.color = '#ff0055';
+        // Close fingers
+        finger1.position.x = -0.2;
+        finger2.position.x = 0.2;
+        
+        // Check distance to pickables
+        graspPoint.getWorldPosition(worldPosTarget);
+        let closest = null;
+        let minDist = 1.5; // grab threshold
+        pickables.forEach(obj => {
+            obj.getWorldPosition(objWorldPos);
+            const dist = worldPosTarget.distanceTo(objWorldPos);
+            if (dist < minDist) {
+                minDist = dist;
+                closest = obj;
+            }
+        });
+        
+        if (closest) {
+            heldObject = closest;
+            graspPoint.attach(heldObject);
+        }
+    } else {
+        gripBtn.innerText = 'Close Gripper';
+        gripBtn.style.background = '';
+        gripBtn.style.borderColor = '';
+        gripBtn.style.color = '';
+        // Open fingers
+        finger1.position.x = -0.5;
+        finger2.position.x = 0.5;
+        
+        if (heldObject) {
+            scene.attach(heldObject);
+            heldObject.getWorldPosition(objWorldPos);
+            // Snap to floor if released close to floor
+            if (objWorldPos.y < 1.0) {
+                heldObject.position.y = 0.4;
+            }
+            heldObject = null;
+        }
+    }
 });
 
 // Initial posture tweak for better visualization out of the box
