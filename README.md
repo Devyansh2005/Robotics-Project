@@ -1,7 +1,5 @@
 # Thor 6-DOF Robotic Arm Simulation 🤖
 
-![Thor Simulation Demo](https://robotics-project-self.vercel.app/vite.svg)
-
 A web-based 3D interactive simulation of the open-source Thor 6-Degree-of-Freedom (6-DOF) robotic arm. Built with modern web technologies, this project provides a premium, responsive interface to explore robotic kinematics and teleoperation without needing physical hardware.
 
 🌐 **Live Deployment**: [View Simulation Here](https://robotics-project-self.vercel.app/)
